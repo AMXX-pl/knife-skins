@@ -497,6 +497,20 @@ get_skin_team(skin)
 	return skin_data[sd_team];
 }
 
+get_skin_access(skin)
+{
+	static skin_data[SkinsDataEnumerator];
+
+	ArrayGetArray(skins_data, skin, skin_data);
+
+	if(strlen(skin_data[sd_flags]))
+	{
+		return read_flags(skin_data[sd_flags]);
+	}
+	
+	return 0;
+}
+
 load_knife_data(index)
 {
 	static key[64],
@@ -529,20 +543,6 @@ save_knife_data(index)
 	formatex(value, charsmax(value), "%i", user_knife[index]);
 
 	nvault_set(vault_handle, key, value);
-}
-
-stock get_skin_access(skin)
-{
-	static skin_data[SkinsDataEnumerator];
-
-	ArrayGetArray(skins_data, skin, skin_data);
-
-	if(strlen(skin_data[sd_flags]))
-	{
-		return read_flags(skin_data[sd_flags]);
-	}
-	
-	return 0;
 }
 
 stock registerCommands(const array[][], arraySize, function[], include_say = true)
