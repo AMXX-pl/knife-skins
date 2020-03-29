@@ -304,6 +304,20 @@ load_config()
 			skin_data[sd_name], MAX_MODEL_NAME,
 			skin_data[sd_flags], 32,
 			skin_data[sd_team], 2);
+		
+		if(!file_exists(skin_data[sd_v]))
+		{
+			log_amx("Tried to download non-existing file: ^"%s^"", skin_data[sd_v]);
+
+			continue;
+		}
+
+		if(!file_exists(skin_data[sd_p]))
+		{
+			log_amx("Tried to download non-existing file: ^"%s^"", skin_data[sd_p]);
+
+			continue;
+		}
 
 		skin_data[sd_team] = str_to_num(skin_data[sd_team]);
 		
