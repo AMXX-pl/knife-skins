@@ -10,8 +10,8 @@ Saves the chosen knife in nvault.
 5. Put 'knife_skins.cfg' into cstrike/addons/amxmodx/configs and continue with the instructions inside the file.
 
 ### Adding skins
-1. Open knife_skins.sma
-2. Add your skin to the SkinsData const as in the example in the code.
+1. Open knife_skins.cfg
+2. Follow the instructions inside the file.
 
 ### Optional
 If you want the plugin to be compatibile with jailbreak api, you need to uncomment 16th line.
