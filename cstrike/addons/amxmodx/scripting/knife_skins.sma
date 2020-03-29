@@ -48,6 +48,8 @@ static const WeaponEntityNames[][] =
 
 static const ConfigFile[] = "addons/amxmodx/configs/knife_skins.cfg";
 
+static const ChatPrefix[] = "[SKINY KOSY]";
+
 static const MenuCommands[][] =
 {
 	"/skiny",
@@ -324,7 +326,7 @@ stock set_model(index, skin)
 	{
 		static message[200];
 
-		formatex(message, charsmax(message), "[SKINY KOSY]^x01 Nie mozesz wybrac tej kosy. ");
+		formatex(message, charsmax(message), "%s^x01 Nie mozesz wybrac tej kosy. ", ChatPrefix);
 
 		if(is_super_vip_skin(skin) && is_vip_skin(skin))
 		{
@@ -340,7 +342,7 @@ stock set_model(index, skin)
 		}
 
 		ColorChat(index, RED, message);
-	
+
 		return;
 	}
 
@@ -348,7 +350,7 @@ stock set_model(index, skin)
 	{
 		static message[200];
 
-		formatex(message, charsmax(message), "[SKINY KOSY]^x01 Ten skin jest tylko dla^x04 %s^x01.", team == ONLY_CT ? "CT" : "TT");
+		formatex(message, charsmax(message), "%s^x01 Ten skin jest tylko dla^x04 %s^x01.", ChatPrefix, team == ONLY_CT ? "CT" : "TT");
 
 		ColorChat(index, RED, message);
 
@@ -357,7 +359,7 @@ stock set_model(index, skin)
 	
 	user_knife[index] = skin;
 	
-	ColorChat(index, RED, "[SKINY KOSY]^x01 Wybrany skin:^x04 %s^x01.", skin_name);
+	ColorChat(index, RED, "%s^x01 Wybrany skin:^x04 %s^x01.", ChatPrefix, skin_name);
 
 	// Player not alive, don't change the models.
 	if(!is_user_alive(index) || current_weapon[index] != CSW_KNIFE)
