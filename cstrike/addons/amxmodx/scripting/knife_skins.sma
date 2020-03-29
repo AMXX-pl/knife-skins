@@ -14,6 +14,8 @@
 
 // Jailbreak friendly requires jail_api_jailbreak to be edited.
 //#define JAILBREAK_FRIENDLY
+#define DISPLAY_TEAMS_IN_MENU
+#define DISPLAY_DEBUG
 
 #define VIP_FLAG "t"
 #define SUPER_VIP_FLAG "n"
@@ -231,9 +233,12 @@ public knife_menu(index)
 	ForRange(i, 0, ArraySize(skins_data) - 1)
 	{
 		wear = can_wear_skin(index, i);
-		team = get_skin_team(i);
 
 		get_skin_name(i, skin_name, charsmax(skin_name));
+
+		#if defined DISPLAY_TEAMS_IN_MENU
+		
+		team = get_skin_team(i);
 
 		switch(team)
 		{
@@ -241,9 +246,17 @@ public knife_menu(index)
 			case ONLY_CT: { formatex(skin_team, charsmax(skin_team), "CT"); }
 			case BOTH_TEAMS: { formatex(skin_team, charsmax(skin_team), "CT & TT"); }
 		}
-
-		// Get the knife name.
+		
 		formatex(menu_item, charsmax(menu_item), "\r[%s%s\r] (%s)", wear ? "\w" : "\d", skin_name, skin_team);
+		
+		#else
+
+		formatex(menu_item, charsmax(menu_item), "\r[%s%s\r]", wear ? "\w" : "\d", skin_name);
+		
+		#pragma unused team
+		#pragma unused skin_team
+
+		#endif
 
 		// Format VIP & SVIP postfix.
 		if(is_vip_skin(i) && is_super_vip_skin(i))
@@ -309,6 +322,7 @@ load_config()
 
 	for(new i; read_file(ConfigFile, i, line_content, charsmax(line_content), line_length); i++)
 	{
+		// Skip commented lines.
 		if(!line_content[0] || line_content[0] == ';' || !line_length)
 		{
 			continue;
@@ -320,25 +334,65 @@ load_config()
 			skin_data[sd_name], MAX_MODEL_NAME,
 			skin_data[sd_flags], 32,
 			skin_data[sd_team], 2);
-		
-		if(!file_exists(skin_data[sd_v]))
-		{
-			log_amx("%L: ^"%s^"", LANG_PLAYER, "TRIED_DOWNLOADING", skin_data[sd_v]);
 
+		// Validate V_ and P_ models.		
+		if(!validate_model(skin_data[sd_v], MAX_MODEL_LENGTH, false))
+		{
 			continue;
 		}
-
-		if(!file_exists(skin_data[sd_p]))
+		
+		if(!validate_model(skin_data[sd_p], MAX_MODEL_LENGTH, true))
 		{
-			log_amx("%L: ^"%s^"", LANG_PLAYER, "TRIED_DOWNLOADING", skin_data[sd_p]);
-
 			continue;
 		}
 
 		skin_data[sd_team] = str_to_num(skin_data[sd_team]);
 		
+		// Save the data.
 		ArrayPushArray(skins_data, skin_data);
 	}
+}
+
+bool:validate_model(model[], length, bool:is_p_model)
+{
+	static raw_model[MAX_MODEL_LENGTH + 1];
+
+	// Make a copy of original model for debuging.
+	copy(raw_model, charsmax(raw_model), model);
+
+	// If P_ model was not supplied, we take the default one.
+	if(is_p_model && !strlen(model))
+	{
+		copy(model, length, "models/p_knife.mdl");
+
+		return true;
+	}
+
+	// Missing .mdl?
+	if(!equal(model[strlen(model) - 4], ".mdl"))
+	{
+		add(model, length, ".mdl");
+	}
+
+	// Missing models/.
+	if(containi(model, "models/") == -1)
+	{
+		format(model, length, "models/%s", model);
+	}
+
+	// File doesn't exist.
+	if(!file_exists(model))
+	{
+		#if defined DISPLAY_DEBUG
+
+		log_amx("%L: ^"%s^" (Raw: ^"%s^")", LANG_PLAYER, "TRIED_DOWNLOADING", model, raw_model);
+		
+		#endif
+
+		return false;
+	}
+
+	return true;
 }
 
 stock set_model(index, skin)
