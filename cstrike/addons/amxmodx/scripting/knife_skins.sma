@@ -12,9 +12,8 @@
 #define ForArray(%1,%2) for(new %1 = 0; %1 < sizeof %2; %1++)
 #define ForRange(%1,%2,%3) for(new %1 = %2; %1 <= %3; %1++)
 
-// Jailbreak friendly required jail_api_jailbreak to be edited.
+// Jailbreak friendly requires jail_api_jailbreak to be edited.
 //#define JAILBREAK_FRIENDLY
-//#define DEBUG_MODE
 
 #define VIP_FLAG "t"
 #define SUPER_VIP_FLAG "n"
@@ -23,27 +22,16 @@
 #define ONLY_CT 2
 #define BOTH_TEAMS (ONLY_TT | ONLY_CT)
 
-enum (+= 1)
-{
-	sd_v,
-	sd_p,
-	sd_name,
-	sd_flags,
-	sd_team
-};
+#define MAX_MODEL_LENGTH 90
+#define MAX_MODEL_NAME 32
 
-/*
-	{
-		(STR) "V_",
-		(STR) "P_",
-		(STR) "Name",
-		(STR) "Flags",
-		(INT) team
-	}
-*/
-static const SkinsData[][][] =
+enum _:SkinsDataEnumerator (+= 1)
 {
-	{ "models/v_knife.mdl", "models/p_knife.mdl", "Domyslny", "", ONLY_TT }
+	sd_v[MAX_MODEL_LENGTH + 1],
+	sd_p[MAX_MODEL_LENGTH + 1],
+	sd_name[MAX_MODEL_NAME + 1],
+	sd_flags[33],
+	sd_team
 };
 
 static const WeaponEntityNames[][] =
@@ -58,7 +46,9 @@ static const WeaponEntityNames[][] =
 	"weapon_ak47", "weapon_knife", "weapon_p90"
 };
 
-static const menu_commands[][] =
+static const ConfigFile[] = "addons/amxmodx/configs/knife_skins.cfg";
+
+static const MenuCommands[][] =
 {
 	"/skiny",
 	"/skins",
@@ -70,7 +60,8 @@ static const menu_commands[][] =
 
 new user_knife[33] = {-1, ...},
 	current_weapon[33],
-	vault_handle;
+	vault_handle,
+	Array:skins_data;
 
 /*
 	[ Forwards ]
@@ -79,7 +70,7 @@ public plugin_init()
 {
 	register_plugin("Skiny do kosy", "v1.2", AUTHOR);
 
-	registerCommands(menu_commands, sizeof(menu_commands), "knife_menu");
+	registerCommands(MenuCommands, sizeof(MenuCommands), "knife_menu");
 
 	RegisterHam(Ham_Spawn, "player", "player_spawned", true);
 	RegisterHam(Ham_Item_AddToPlayer, "weapon_knife", "add_knife", true);
@@ -99,10 +90,16 @@ public plugin_init()
 
 public plugin_precache()
 {
-	ForArray(i, SkinsData)
+	load_config();
+
+	static skin_data[SkinsDataEnumerator];
+
+	ForRange(i, 0, ArraySize(skins_data) - 1)
 	{
-		precache_model(SkinsData[i][sd_v]);
-		precache_model(SkinsData[i][sd_p]);
+		ArrayGetArray(skins_data, i, skin_data);
+		
+		precache_model(skin_data[sd_v]);
+		precache_model(skin_data[sd_p]);
 	}
 }
 
@@ -116,7 +113,11 @@ public client_putinserver(index)
 	load_knife_data(index);
 }
 
+#if AMXX_VERSION_NUM >= 190
+public client_disconnected(index)
+#else
 public client_disconnect(index)
+#endif
 {
 	if(is_user_hltv(index))
 	{
@@ -204,14 +205,27 @@ public knife_menu(index)
 {
 	new menu_index = menu_create("\r[\dWybor Kosy\r]", "knife_menu_handler"),
 		menu_item[64],
-		bool:wear;
+		skin_name[MAX_MODEL_NAME + 1],
+		skin_team[33],
+		bool:wear,
+		team;
 
-	ForArray(i, SkinsData)
+	ForRange(i, 0, ArraySize(skins_data) - 1)
 	{
 		wear = can_wear_skin(index, i);
+		team = get_skin_team(i);
+
+		get_skin_name(i, skin_name, charsmax(skin_name));
+
+		switch(team)
+		{
+			case ONLY_TT: { formatex(skin_team, charsmax(skin_team), "TT"); }
+			case ONLY_CT: { formatex(skin_team, charsmax(skin_team), "CT"); }
+			case BOTH_TEAMS: { formatex(skin_team, charsmax(skin_team), "CT & TT"); }
+		}
 
 		// Get the knife name.
-		formatex(menu_item, charsmax(menu_item), "\r[%s%s\r]", wear ? "\w" : "\d", SkinsData[i][sd_name]);
+		formatex(menu_item, charsmax(menu_item), "\r[%s%s\r] (%s)", wear ? "\w" : "\d", skin_name, skin_team);
 
 		// Format VIP & SVIP postfix.
 		if(is_vip_skin(i) && is_super_vip_skin(i))
@@ -256,18 +270,61 @@ public knife_menu_handler(index, menu_index, item)
 /*
 	[ Functions ]
 */
+load_config()
+{
+	// File not found.
+	if(!file_exists(ConfigFile))
+	{
+		static error[128];
+
+		formatex(error, charsmax(error), "Missing config file ^"%s^".", ConfigFile);
+	
+		set_fail_state(error);
+	}
+
+	// Init dynamic array.
+	skins_data = ArrayCreate(SkinsDataEnumerator);
+
+	new line_content[(MAX_MODEL_LENGTH + MAX_MODEL_NAME) * 2],
+		line_length,
+		skin_data[SkinsDataEnumerator];
+
+	for(new i; read_file(ConfigFile, i, line_content, charsmax(line_content), line_length); i++)
+	{
+		if(!line_content[0] || line_content[0] == ';' || !line_length)
+		{
+			continue;
+		}
+
+		parse(line_content,
+			skin_data[sd_v], MAX_MODEL_LENGTH,
+			skin_data[sd_p], MAX_MODEL_LENGTH,
+			skin_data[sd_name], MAX_MODEL_NAME,
+			skin_data[sd_flags], 32,
+			skin_data[sd_team], 2);
+
+		skin_data[sd_team] = str_to_num(skin_data[sd_team]);
+		
+		ArrayPushArray(skins_data, skin_data);
+	}
+}
+
 stock set_model(index, skin)
 {
-	static skin_flags;
+	static skin_flags,
+		skin_name[MAX_MODEL_NAME + 1 + 1],
+		team;
 
 	skin_flags = get_skin_access(skin);
+	team = get_skin_team(skin);
+	get_skin_name(skin, skin_name, charsmax(skin_name));
 
 	// Player has no access to that knife.
 	if(skin_flags && !(get_user_flags(index) & skin_flags))
 	{
 		static message[200];
 
-		formatex(message, charsmax(message), "[SKINY KOSY]^x01 Nie mozesz wybrac tej kosy.");
+		formatex(message, charsmax(message), "[SKINY KOSY]^x01 Nie mozesz wybrac tej kosy. ");
 
 		if(is_super_vip_skin(skin) && is_vip_skin(skin))
 		{
@@ -286,10 +343,21 @@ stock set_model(index, skin)
 	
 		return;
 	}
+
+	if(team != BOTH_TEAMS && team != get_user_team(index))
+	{
+		static message[200];
+
+		formatex(message, charsmax(message), "[SKINY KOSY]^x01 Ten skin jest tylko dla^x04 %s^x01.", team == ONLY_CT ? "CT" : "TT");
+
+		ColorChat(index, RED, message);
+
+		return;
+	}
 	
 	user_knife[index] = skin;
 	
-	ColorChat(index, RED, "[SKINY KOSY]^x01 Wybrany skin:^x04 %s^x01.", SkinsData[skin][sd_name]);
+	ColorChat(index, RED, "[SKINY KOSY]^x01 Wybrany skin:^x04 %s^x01.", skin_name);
 
 	// Player not alive, don't change the models.
 	if(!is_user_alive(index) || current_weapon[index] != CSW_KNIFE)
@@ -297,9 +365,15 @@ stock set_model(index, skin)
 		return;
 	}
 
+	static v[MAX_MODEL_LENGTH + 1],
+		p[MAX_MODEL_LENGTH + 1];
+	
+	get_skin_v(skin, v, charsmax(v));
+	get_skin_p(skin, p, charsmax(p));
+
 	// Apply the models.
-	set_pev(index, pev_viewmodel2, SkinsData[skin][sd_v]);
-	set_pev(index, pev_weaponmodel2, SkinsData[skin][sd_p]);
+	set_pev(index, pev_viewmodel2, v);
+	set_pev(index, pev_weaponmodel2, p);
 }
 
 stock update_model(index)
@@ -309,8 +383,14 @@ stock update_model(index)
 		return;
 	}
 
-	set_pev(index, pev_viewmodel2, SkinsData[user_knife[index]][sd_v]);
-	set_pev(index, pev_weaponmodel2, SkinsData[user_knife[index]][sd_p]);
+	static v[MAX_MODEL_LENGTH + 1],
+		p[MAX_MODEL_LENGTH + 1];
+	
+	get_skin_v(user_knife[index], v, charsmax(v));
+	get_skin_p(user_knife[index], p, charsmax(p));
+
+	set_pev(index, pev_viewmodel2, v);
+	set_pev(index, pev_weaponmodel2, p);
 }
 
 bool:is_vip_skin(skin)
@@ -341,12 +421,48 @@ bool:can_wear_skin(index, skin)
 	}
 
 	// Team not matching.
-	if(!(get_user_team(index) & SkinsData[skin][sd_team][0]))
+	if(!(get_user_team(index) & get_skin_team(skin)))
 	{
 		return false;
 	}
 
 	return true;
+}
+
+get_skin_name(skin, output[], length)
+{
+	static skin_data[SkinsDataEnumerator];
+
+	ArrayGetArray(skins_data, skin, skin_data);
+
+	copy(output, length, skin_data[sd_name]);
+}
+
+get_skin_v(skin, output[], length)
+{
+	static skin_data[SkinsDataEnumerator];
+
+	ArrayGetArray(skins_data, skin, skin_data);
+
+	copy(output, length, skin_data[sd_v]);
+}
+
+get_skin_p(skin, output[], length)
+{
+	static skin_data[SkinsDataEnumerator];
+
+	ArrayGetArray(skins_data, skin, skin_data);
+
+	copy(output, length, skin_data[sd_p]);
+}
+
+get_skin_team(skin)
+{
+	static skin_data[SkinsDataEnumerator];
+
+	ArrayGetArray(skins_data, skin, skin_data);
+
+	return skin_data[sd_team];
 }
 
 load_knife_data(index)
@@ -360,13 +476,7 @@ load_knife_data(index)
 
 	skin = nvault_get(vault_handle, key);
 
-	#if defined DEBUG_MODE
-
-	log_amx("[Load knife data] User: #%i (%s), Data: %i", index, key, skin);
-
-	#endif
-
-	if(can_wear_skin(index, skin))
+	if(!can_wear_skin(index, skin))
 	{
 		user_knife[index] = -1;
 	}
@@ -387,19 +497,17 @@ save_knife_data(index)
 	formatex(value, charsmax(value), "%i", user_knife[index]);
 
 	nvault_set(vault_handle, key, value);
-
-	#if defined DEBUG_MODE
-
-	log_amx("[Save knife data] User: #%i (%s), Data: %s", index, key, value);
-
-	#endif
 }
 
 stock get_skin_access(skin)
 {
-	if(strlen(SkinsData[skin][sd_flags]))
+	static skin_data[SkinsDataEnumerator];
+
+	ArrayGetArray(skins_data, skin, skin_data);
+
+	if(strlen(skin_data[sd_flags]))
 	{
-		return read_flags(SkinsData[skin][sd_flags]);
+		return read_flags(skin_data[sd_flags]);
 	}
 	
 	return 0;
