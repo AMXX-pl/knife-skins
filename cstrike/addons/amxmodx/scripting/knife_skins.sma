@@ -107,7 +107,7 @@ public plugin_precache()
 	ForSkins(i)
 	{
 		get_skin_v(i, v, charsmax(v));
-		get_skin_p(i, v, charsmax(p));
+		get_skin_p(i, p, charsmax(p));
 
 		precache_model(v);
 		precache_model(p);
@@ -396,12 +396,6 @@ bool:validate_model(model[], length, bool:is_p_model)
 	// File doesn't exist.
 	if(!file_exists(model))
 	{
-		#if defined DISPLAY_DEBUG
-
-		log_amx("%L: ^"%s^" (Raw: ^"%s^")", LANG_PLAYER, "TRIED_DOWNLOADING", model, raw_model);
-		
-		#endif
-
 		return false;
 	}
 
