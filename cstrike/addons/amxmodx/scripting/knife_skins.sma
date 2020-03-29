@@ -311,7 +311,7 @@ load_config()
 	{
 		static error[128];
 
-		formatex(error, charsmax(error), "%L ^"%s^"", LANG_PLAYER, "MISSIN_FILE", ConfigFile);
+		formatex(error, charsmax(error), "%L ^"%s^"", LANG_PLAYER, "MISSING_FILE", ConfigFile);
 
 		set_fail_state(error);
 	}
