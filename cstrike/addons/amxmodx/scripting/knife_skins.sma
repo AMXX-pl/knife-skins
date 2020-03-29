@@ -70,7 +70,7 @@ new user_knife[33] = {-1, ...},
 */
 public plugin_init()
 {
-	register_plugin("Skiny do kosy", "v1.2", AUTHOR);
+	register_plugin("Skiny do kosy", "v1.5", AUTHOR);
 
 	registerCommands(MenuCommands, sizeof(MenuCommands), "knife_menu");
 
