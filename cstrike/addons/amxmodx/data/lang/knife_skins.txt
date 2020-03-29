@@ -1,0 +1,23 @@
+[en]
+NO_SKINS_LOADED = "No skins were loaded."
+MENU_TITLE = "\r[\dKnife menu\r]"
+MISSING_FILE = "Missing file"
+TRIED_DOWNLOADING = "Tried to download non-existing file"
+CANT_CHOOSE_THAT_KNIFE = "You cannot choose that knife"
+BUY_SVIP_OR_VIP = "You need to buy^x04 VIP^x01 or^x04 SVIP^x01 in order to choose that knife"
+BUY_SVIP = "You need to buy^x04 SVIP^x01 in order to choose that knife"
+BUY_VIP = "You need to buy^x04 VIP^x01 in order to choose that knife"
+SKIN_ONLY_FOR_TEAM = "This skin is available only for"
+CHOSEN_SKIN = "Chosen skin"
+
+[pl]
+NO_SKINS_LOADED = "Brak zaladowanych skinow."
+MENU_TITLE = "\r[\dWybor kosy\r]"
+MISSING_FILE = "Brakujacy plik"
+TRIED_DOWNLOADING = "Proba pobrania nieistniejacego pliku"
+CANT_CHOOSE_THAT_KNIFE = "Nie mozesz wybrac tej kosy"
+BUY_SVIP_OR_VIP = "Kup^x04 Super VIPa^x01 lub^x04 VIPa^x01, jesli chcesz jej uzywac"
+BUY_SVIP = "Kup^x04 Super VIPa^x01, jesli chcesz jej uzywac"
+BUY_VIP = "Kup^x04 VIPa^x01, jesli chcesz jej uzywac"
+SKIN_ONLY_FOR_TEAM = "Ten skin jest tylko dla"
+CHOSEN_SKIN = "Wybrany skin"

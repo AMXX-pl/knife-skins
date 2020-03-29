@@ -50,6 +50,8 @@ static const ConfigFile[] = "addons/amxmodx/configs/knife_skins.cfg";
 
 static const ChatPrefix[] = "[SKINY KOSY]";
 
+static const PluginDictionary[] = "knife_skins.txt";
+
 static const MenuCommands[][] =
 {
 	"/skiny",
@@ -88,6 +90,8 @@ public plugin_init()
 	}
 
 	vault_handle = nvault_open("knife_skins.nvault");
+
+	register_dictionary(PluginDictionary);
 }
 
 public plugin_precache()
@@ -207,18 +211,23 @@ public knife_menu(index)
 {
 	if(!ArraySize(skins_data))
 	{
-		ColorChat(index, RED, "%s^x01 Brak zaladowanych skinow.", ChatPrefix);
+		ColorChat(index, RED, "%s^x01 %L", ChatPrefix, LANG_PLAYER, "NO_SKINS_LOADED");
 
 		return PLUGIN_HANDLED;
 	}
 
-	new menu_index = menu_create("\r[\dWybor Kosy\r]", "knife_menu_handler"),
+	new menu_index,
+		menu_title[64],
 		menu_item[64],
 		skin_name[MAX_MODEL_NAME + 1],
 		skin_team[33],
 		bool:wear,
 		team;
+	
+	formatex(menu_title, charsmax(menu_title), "%L", LANG_PLAYER, "MENU_TITLE");
 
+	menu_index = menu_create(menu_title, "knife_menu_handler");
+	
 	ForRange(i, 0, ArraySize(skins_data) - 1)
 	{
 		wear = can_wear_skin(index, i);
@@ -286,8 +295,8 @@ load_config()
 	{
 		static error[128];
 
-		formatex(error, charsmax(error), "Missing config file ^"%s^".", ConfigFile);
-	
+		formatex(error, charsmax(error), "%L ^"%s^"", LANG_PLAYER, "MISSIN_FILE", ConfigFile);
+
 		set_fail_state(error);
 	}
 
@@ -314,14 +323,14 @@ load_config()
 		
 		if(!file_exists(skin_data[sd_v]))
 		{
-			log_amx("Tried to download non-existing file: ^"%s^"", skin_data[sd_v]);
+			log_amx("%L: ^"%s^"", LANG_PLAYER, "TRIED_DOWNLOADING", skin_data[sd_v]);
 
 			continue;
 		}
 
 		if(!file_exists(skin_data[sd_p]))
 		{
-			log_amx("Tried to download non-existing file: ^"%s^"", skin_data[sd_p]);
+			log_amx("%L: ^"%s^"", LANG_PLAYER, "TRIED_DOWNLOADING", skin_data[sd_p]);
 
 			continue;
 		}
@@ -347,19 +356,19 @@ stock set_model(index, skin)
 	{
 		static message[200];
 
-		formatex(message, charsmax(message), "%s^x01 Nie mozesz wybrac tej kosy. ", ChatPrefix);
+		formatex(message, charsmax(message), "%s^x01 %L. ", ChatPrefix, LANG_PLAYER, "CANT_CHOOSE_THAT_KNIFE");
 
 		if(is_super_vip_skin(skin) && is_vip_skin(skin))
 		{
-			add(message, charsmax(message), "Kup^x04 Super VIPa^x01 lub^x04 VIPa^x01, jesli chcesz jej uzywac.");
+			format(message, charsmax(message), "%s%L", message, LANG_PLAYER, "BUY_SVIP_OR_VIP");
 		}
 		else if(is_super_vip_skin(skin))
 		{
-			add(message, charsmax(message), "Kup^x04 Super VIPa^x01, jesli chcesz jej uzywac.");
+			format(message, charsmax(message), "%s%L", message, LANG_PLAYER, "BUY_SVIP");
 		}
 		else
 		{
-			add(message, charsmax(message), "Kup^x04 VIPa^x01, jesli chcesz jej uzywac.");
+			format(message, charsmax(message), "%s%L", message, LANG_PLAYER, "BUY_VIP");
 		}
 
 		ColorChat(index, RED, message);
@@ -371,7 +380,7 @@ stock set_model(index, skin)
 	{
 		static message[200];
 
-		formatex(message, charsmax(message), "%s^x01 Ten skin jest tylko dla^x04 %s^x01.", ChatPrefix, team == ONLY_CT ? "CT" : "TT");
+		formatex(message, charsmax(message), "%s^x01 %L^x04 %s^x01.", ChatPrefix, LANG_PLAYER, "SKIN_ONLY_FOR_TEAM", team == ONLY_CT ? "CT" : "TT");
 
 		ColorChat(index, RED, message);
 
@@ -380,7 +389,7 @@ stock set_model(index, skin)
 	
 	user_knife[index] = skin;
 	
-	ColorChat(index, RED, "%s^x01 Wybrany skin:^x04 %s^x01.", ChatPrefix, skin_name);
+	ColorChat(index, RED, "%s^x01 %L:^x04 %s^x01.", ChatPrefix, LANG_PLAYER, "CHOSEN_SKIN", skin_name);
 
 	// Player not alive, don't change the models.
 	if(!is_user_alive(index) || current_weapon[index] != CSW_KNIFE)
