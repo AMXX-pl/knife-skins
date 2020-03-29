@@ -11,6 +11,7 @@
 
 #define ForArray(%1,%2) for(new %1 = 0; %1 < sizeof %2; %1++)
 #define ForRange(%1,%2,%3) for(new %1 = %2; %1 <= %3; %1++)
+#define ForSkins(%1) for(new %1 = 0; %1 < ArraySize(skins_data); %1++)
 
 // Jailbreak friendly requires jail_api_jailbreak to be edited.
 //#define JAILBREAK_FRIENDLY
@@ -100,14 +101,16 @@ public plugin_precache()
 {
 	load_config();
 
-	static skin_data[SkinsDataEnumerator];
+	static v[MAX_MODEL_LENGTH + 1],
+		p[MAX_MODEL_LENGTH + 1];
 
-	ForRange(i, 0, ArraySize(skins_data) - 1)
+	ForSkins(i)
 	{
-		ArrayGetArray(skins_data, i, skin_data);
-		
-		precache_model(skin_data[sd_v]);
-		precache_model(skin_data[sd_p]);
+		get_skin_v(i, v, charsmax(v));
+		get_skin_p(i, v, charsmax(p));
+
+		precache_model(v);
+		precache_model(p);
 	}
 }
 
@@ -230,7 +233,7 @@ public knife_menu(index)
 
 	menu_index = menu_create(menu_title, "knife_menu_handler");
 	
-	ForRange(i, 0, ArraySize(skins_data) - 1)
+	ForSkins(i)
 	{
 		wear = can_wear_skin(index, i);
 
