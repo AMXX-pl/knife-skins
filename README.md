@@ -8,6 +8,10 @@ Saves the chosen knife in nvault.
 3. Upload the file to cstrike/addons/amxmodx/plugins.
 4. Put 'knife_skins.amxx' into plugins.ini (preferably plugins-jb.ini, under the jail_api_jailbreak plugin).
 
+### Adding skins
+1. Open knife_skins.sma
+2. Add your skin to the SkinsData const as in the example in the code.
+
 ### Optional
 If you want the plugin to be compatibile with jailbreak api, you need to uncomment 16th line.
 Then add forward 'OnFight' to the jail_api_jailbreak plugin; OnFight(status)
