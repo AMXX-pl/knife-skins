@@ -575,15 +575,17 @@ get_skin_access(skin)
 load_knife_data(index)
 {
 	static key[64],
-		skin;
+		skin,
+		flags;
 
 	get_user_name(index, key, charsmax(key));
 
 	format(key, charsmax(key), "knife-%s", key);
 
 	skin = nvault_get(vault_handle, key);
+	flags = get_user_flags(index);
 
-	if(!can_wear_skin(index, skin))
+	if(!(flags & get_skin_access(skin)))
 	{
 		user_knife[index] = -1;
 	}
