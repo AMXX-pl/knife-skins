@@ -350,6 +350,16 @@ load_config()
 		}
 
 		skin_data[sd_team] = str_to_num(skin_data[sd_team]);
+
+		// Make sure 'team' stays in the range of actual teams.
+		if(skin_data[sd_team] <= 0)
+		{
+			skin_data[sd_team] = 1;
+		}
+		else if(skin_data[sd_team] > BOTH_TEAMS)
+		{
+			skin_data[sd_team] = BOTH_TEAMS;
+		}
 		
 		// Save the data.
 		ArrayPushArray(skins_data, skin_data);
