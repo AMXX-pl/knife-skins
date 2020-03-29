@@ -205,6 +205,13 @@ public OnFight(status)
 
 public knife_menu(index)
 {
+	if(!ArraySize(skins_data))
+	{
+		ColorChat(index, RED, "%s^x01 Brak zaladowanych skinow.", ChatPrefix);
+
+		return PLUGIN_HANDLED;
+	}
+
 	new menu_index = menu_create("\r[\dWybor Kosy\r]", "knife_menu_handler"),
 		menu_item[64],
 		skin_name[MAX_MODEL_NAME + 1],
